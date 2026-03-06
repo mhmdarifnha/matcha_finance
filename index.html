@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Matcha Finance 🍵</title>
+    <title>Finance Tracker 📊</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f3f5f1; }
         .matcha-card { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); }
+        .history-item:last-child { border-bottom: none; }
     </style>
 </head>
 <body class="p-6 text-[#2d3e30]">
@@ -35,7 +36,7 @@
         </div>
 
         <h3 class="font-bold mb-4 px-2">Your Wallets</h3>
-        <div class="space-y-3">
+        <div class="space-y-3 mb-8">
             <div class="flex justify-between items-center p-4 bg-white rounded-2xl shadow-sm border border-[#eef2eb]">
                 <div class="flex items-center gap-3">
                     <div class="bg-[#d5e2cd] p-2 rounded-xl text-xl">💵</div>
@@ -52,40 +53,60 @@
             </div>
         </div>
 
+        <h3 class="font-bold mb-4 px-2">Monthly History 🗓️</h3>
+        <div id="history-container" class="bg-white rounded-[2rem] p-2 shadow-sm border border-[#eef2eb] overflow-hidden">
+            <p class="text-center py-4 text-sm opacity-50 italic">Memuat riwayat...</p>
+        </div>
+
         <button onclick="fetchData()" class="w-full mt-8 py-4 bg-[#2d3e30] text-[#d5e2cd] rounded-2xl font-bold shadow-lg active:scale-95 transition-all">
             Refresh Data 🔄
         </button>
     </div>
 
     <script>
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyCGZTc-x4s7UTnNLWH77venh_2ReLYDhDtFdiR9rw70ESeM0jNNBQaXoIowBvm8GAmEw/exec';
+        const SCRIPT_URL = 'URL_WEB_APP_KAMU_DISINI';
 
         async function fetchData() {
-           try {
-        const response = await fetch(SCRIPT_URL, {
-            redirect: 'follow',
-            method: 'GET',
-            headers: {
-                'Content-Type': 'text/plain;charset=utf-8',
+            try {
+                const response = await fetch(SCRIPT_URL, { redirect: 'follow' });
+                const data = await response.json();
+                
+                // Update Main Info
+                document.getElementById('remaining').innerText = 'Rp ' + (data.remaining || 0).toLocaleString('id-ID');
+                document.getElementById('income').innerText = 'Rp ' + (data.income || 0).toLocaleString('id-ID');
+                document.getElementById('expense').innerText = 'Rp ' + (data.expense || 0).toLocaleString('id-ID');
+                document.getElementById('cash').innerText = 'Rp ' + (data.cash || 0).toLocaleString('id-ID');
+                document.getElementById('eWallet').innerText = 'Rp ' + (data.eWallet || 0).toLocaleString('id-ID');
+                
+                // Update History List
+                const container = document.getElementById('history-container');
+                container.innerHTML = ''; // Clear loading
+
+                if (data.history && data.history.length > 0) {
+                    data.history.reverse().forEach(item => { // Urutkan dari bulan terbaru
+                        const div = document.createElement('div');
+                        div.className = 'history-item flex justify-between items-center p-4 border-b border-[#f3f5f1]';
+                        div.innerHTML = `
+                            <div>
+                                <p class="font-bold text-sm">${item.month}</p>
+                                <p class="text-[10px] text-green-600 font-bold">In: Rp ${item.income.toLocaleString('id-ID')}</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-extrabold text-sm text-[#8b5e5e]">Out: Rp ${item.expense.toLocaleString('id-ID')}</p>
+                                <p class="text-[9px] opacity-50">Net: Rp ${item.balance.toLocaleString('id-ID')}</p>
+                            </div>
+                        `;
+                        container.appendChild(div);
+                    });
+                } else {
+                    container.innerHTML = '<p class="text-center py-4 text-sm opacity-50">Belum ada riwayat.</p>';
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
             }
-        });
-        
-        const data = await response.json();
-        
-        // Update tampilan (dengan fallback kalau data kosong)
-        document.getElementById('remaining').innerText = 'Rp ' + (data.remaining || 0).toLocaleString('id-ID');
-        document.getElementById('income').innerText = 'Rp ' + (data.income || 0).toLocaleString('id-ID');
-        document.getElementById('expense').innerText = 'Rp ' + (data.expense || 0).toLocaleString('id-ID');
-        document.getElementById('cash').innerText = 'Rp ' + (data.cash || 0).toLocaleString('id-ID');
-        document.getElementById('eWallet').innerText = 'Rp ' + (data.eWallet || 0).toLocaleString('id-ID');
-        
-    } catch (error) {
-        console.error('Error fetching data:', error);
-        alert('Gagal ambil data, cek console browser ya!');
-    }
         }
         
-        // Auto load
         fetchData();
     </script>
 </body>
