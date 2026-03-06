@@ -58,21 +58,31 @@
     </div>
 
     <script>
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxIUcrKJJX0WgzRjBtSjmGeXWlhOQTPf9uyN7k_WinA2WQW1R_hkwORKvfjpaRtEZFvUw/exec';
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyCGZTc-x4s7UTnNLWH77venh_2ReLYDhDtFdiR9rw70ESeM0jNNBQaXoIowBvm8GAmEw/exec';
 
         async function fetchData() {
-            try {
-                const response = await fetch(SCRIPT_URL);
-                const data = await response.json();
-                
-                document.getElementById('remaining').innerText = 'Rp ' + data.remaining.toLocaleString();
-                document.getElementById('income').innerText = 'Rp ' + data.income.toLocaleString();
-                document.getElementById('expense').innerText = 'Rp ' + data.expense.toLocaleString();
-                document.getElementById('cash').innerText = 'Rp ' + data.cash.toLocaleString();
-                document.getElementById('eWallet').innerText = 'Rp ' + data.eWallet.toLocaleString();
-            } catch (error) {
-                console.error('Error fetching data:', error);
+           try {
+        const response = await fetch(SCRIPT_URL, {
+            redirect: 'follow',
+            method: 'GET',
+            headers: {
+                'Content-Type': 'text/plain;charset=utf-8',
             }
+        });
+        
+        const data = await response.json();
+        
+        // Update tampilan (dengan fallback kalau data kosong)
+        document.getElementById('remaining').innerText = 'Rp ' + (data.remaining || 0).toLocaleString('id-ID');
+        document.getElementById('income').innerText = 'Rp ' + (data.income || 0).toLocaleString('id-ID');
+        document.getElementById('expense').innerText = 'Rp ' + (data.expense || 0).toLocaleString('id-ID');
+        document.getElementById('cash').innerText = 'Rp ' + (data.cash || 0).toLocaleString('id-ID');
+        document.getElementById('eWallet').innerText = 'Rp ' + (data.eWallet || 0).toLocaleString('id-ID');
+        
+    } catch (error) {
+        console.error('Error fetching data:', error);
+        alert('Gagal ambil data, cek console browser ya!');
+    }
         }
         
         // Auto load
